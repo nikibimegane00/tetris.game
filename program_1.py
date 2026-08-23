@@ -4,3 +4,5 @@ import random
 #画面サイズ
 W = 160
 H = 200
+
+count = 0
