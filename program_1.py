@@ -6,6 +6,8 @@ W = 160
 H = 320
 
 fall_timer = 0
+score = 0
+game_over = False
 FALL_SPEED = 15
 
 
@@ -34,24 +36,26 @@ PIECE_COLOR = {"I": 12,
                "J": 1,                                                                                           
                "L": 9,}        
 
-current_type = random.choice(list(TETROMINO.keys()))                                                                  
-current_x = 3                                                                                
-current_y = 0                                
-
 board = [[0 for _ in range(COLS)]for _ in range(ROWS)]
 
-def clear_lines():                                                                                                                                                        
-       row = ROWS - 1                                                                                         
-       while row >= 0:                                                                                        
-           if all(board[row][col] != 0 for col in range(COLS)):                                                                                                
-               for r in range(row, 0, -1):                                                                    
-                   board[r] = board[r - 1][:]                                                                 
-               board[0] = [0] * COLS                                                                          
-           else:                                                                                              
-               row -= 1  
+def clear_lines():   
+    global score                                                                                                                                                     
+    row = ROWS - 1                                                                                         
+    while row >= 0:                                                                                       
+        if all(board[row][col] != 0 for col in range(COLS)):                                                                                                
+            for r in range(row, 0, -1):                                                                    
+                board[r] = board[r - 1][:]                                                                 
+            board[0] = [0] * COLS   
+            score += 100                                                                       
+        else:                                                                                              
+            row -= 1  
 
 def update():                                                                                              
-       global current_x, current_y, fall_timer                                                                
+       global current_x, current_y, fall_timer, game_over
+       if game_over:
+           if pyxel.btnp(pyxel.KEY_R):
+               reset_game()
+           return                                                               
                                                                                                                                                                                                         
        if pyxel.btnp(pyxel.KEY_LEFT) and can_move(-1, 0):                                                     
            current_x -= 1                                                                                     
@@ -59,7 +63,7 @@ def update():
            current_x += 1                                                                                     
        if pyxel.btnp(pyxel.KEY_UP):                                                                           
            rotate_piece()                                                                                     
-       if pyxel.btn(pyxel.KEY_DOWN) and can_move(0, 1):                                                       
+       if pyxel.btnp(pyxel.KEY_DOWN) and can_move(0, 1):                                                       
            current_y += 1                                                                                     
                                                                                                                                                                                                  
        fall_timer += 1                                                                                        
@@ -77,14 +81,35 @@ def draw_block(bx, by, color):
        
 bag = []
 
+def reset_game():                                                                       
+       global board, bag, score, game_over, current_type, current_x, current_y, fall_timer                    
+       board = [[0 for _ in range(COLS)] for _ in range(ROWS)]                                                
+       bag = list(TETROMINO.keys())
+       random.shuffle(bag)                                                                                    
+       score = 0
+       game_over = False
+       fall_timer = 0
+       current_type = bag.pop()                                                                               
+       current_x = 3
+       current_y = 0                                                                                          
+
+def peek_next():                                                                                           
+       global bag
+       if not bag:
+           bag = list(TETROMINO.keys())
+           random.shuffle(bag)
+       return bag[-1]                                                                                         
+
 def new_piece():                                                                                                                                                  
-       global current_type, current_x, current_y, bag                                                            
+       global current_type, current_x, current_y, bag, game_over                                                       
        if not bag:
            bag = list(TETROMINO.keys())
            random.shuffle(bag)
        current_type = bag.pop()
        current_x = 3                                                                                          
-       current_y = 0               
+       current_y = 0 
+       if not can_move(0, 0):                                         
+           game_over = True                 
        
 def can_move(dx, dy):                                                                                                                                               
        for cx, cy in TETROMINO[current_type]:                                                                 
@@ -132,10 +157,28 @@ def draw():
        for y in range(ROWS):                                                                                  
                    for x in range(COLS):                                                                              
                        if board[y][x] != 0:                                                                           
-                           draw_block(x, y, board[y][x])                                         
-                        
+                           draw_block(x, y, board[y][x])   
+                           pyxel.text(4, 4, "SCORE", 7)
+                           pyxel.text(4, 12, str(score), 7)
+                           
+                           nxt = peek_next()                                                                                      
+                           pyxel.rect(W - 58, 4, 54, 38, 0)                                                                       
+                           pyxel.rectb(W - 58, 4, 54, 38, 7)                                                                      
+                           pyxel.text(W - 50, 6, "NEXT", 7)                                                                       
+                           cells = TETROMINO[nxt]                                                                                 
+                           min_x = min(cx for cx, _ in cells)                                                                     
+                           min_y = min(cy for _, cy in cells)                                                                     
+                           for cx, cy in cells:                                                                                  
+                               pyxel.rect(W - 50 + (cx - min_x) * 8, 16 + (cy - min_y) * 8, 7, 7, PIECE_COLOR[nxt])  
+                               
+                               if game_over:                                                                                          
+                                   pyxel.rect(25, 135, 110, 55, 0)                                                                    
+                                   pyxel.rectb(25, 135, 110, 55, 8)                                                                   
+                                   pyxel.text(58, 147, "GAME OVER", 8)                                                                
+                                   pyxel.text(38, 163, "SCORE: " + str(score), 7)                                                     
+                                   pyxel.text(42, 175, "R: RESTART", 7)  
                          
                          
     
-        
+reset_game()       
 pyxel.run(update, draw)
