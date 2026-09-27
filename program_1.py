@@ -155,27 +155,27 @@ def draw():
        for cx, cy in TETROMINO[current_type]:                                                                            
            draw_block(current_x + cx, current_y + cy, PIECE_COLOR[current_type]) 
         
-for y in range(ROWS):                                                                                  
-    for x in range(COLS):                                                                              
-        if board[y][x] != 0:                                                                           
-            draw_block(x, y, board[y][x])   
-            pyxel.text(4, 4, "SCORE", 7)
-            pyxel.text(4, 12, str(score), 7)
+       for y in range(ROWS):                                                                                  
+           for x in range(COLS):
+               pyxel.text(4, 4, "SCORE", 7)                                                                              
+               if board[y][x] != 0:                                                                           
+                   draw_block(x, y, board[y][x])   
+                   pyxel.text(4, 12, str(score), 7)
                            
-        nxt_list = peek_next(3)                                                                                      
-        for i, nxt in enumerate(nxt_list):                                               
-            cells = TETROMINO[nxt]                                                                                            
-            min_x = min(cx for cx, _ in cells)                                                                                
-            min_y = min(cy for _, cy in cells)                                                                                
-            for cx, cy in cells:                                                                                                                                              
-                pyxel.rect(W - 50 + (cx - min_x) * 8, 16 + i * 20 + (cy - min_y) * 8, 7, 7, PIECE_COLOR[nxt]) 
+           nxt_list = peek_next(3)                                                                                      
+           for i, nxt in enumerate(nxt_list):                                               
+               cells = TETROMINO[nxt]                                                                                            
+               min_x = min(cx for cx, _ in cells)                                                                                
+               min_y = min(cy for _, cy in cells)                                                                                
+               for cx, cy in cells:                                                                                                                                              
+                   pyxel.rect(W - 50 + (cx - min_x) * 8, 16 + i * 20 + (cy - min_y) * 8, 7, 7, PIECE_COLOR[nxt]) 
                                
-        if game_over:                                                                                          
-            pyxel.rect(25, 135, 110, 55, 0)                                                                    
-            pyxel.rectb(25, 135, 110, 55, 8)                                                                   
-            pyxel.text(58, 147, "GAME OVER", 8)                                                                
-            pyxel.text(38, 163, "SCORE: " + str(score), 7)                                                     
-            pyxel.text(42, 175, "R: RESTART", 7)  
+           if game_over:                                                                                          
+               pyxel.rect(25, 135, 110, 55, 0)                                                                    
+               pyxel.rectb(25, 135, 110, 55, 8)                                                                   
+               pyxel.text(58, 147, "GAME OVER", 8)                                                                
+               pyxel.text(38, 163, "SCORE: " + str(score), 7)                                                     
+               pyxel.text(42, 175, "R: RESTART", 7)  
                          
                          
     
