@@ -93,12 +93,13 @@ def reset_game():
        current_x = 3
        current_y = 0                                                                                          
 
-def peek_next():                                                                                           
+def peek_next(n=3):                                                                                           
        global bag
-       if not bag:
-           bag = list(TETROMINO.keys())
-           random.shuffle(bag)
-       return bag[-1]                                                                                         
+       while len(bag) < n:
+           new_bag = list(TETROMINO.keys())
+           random.shuffle(new_bag)
+           bag = new_bag + bag
+       return [bag[-1], bag[-2], bag[-3]]
 
 def new_piece():                                                                                                                                                  
        global current_type, current_x, current_y, bag, game_over                                                       
@@ -154,29 +155,27 @@ def draw():
        for cx, cy in TETROMINO[current_type]:                                                                            
            draw_block(current_x + cx, current_y + cy, PIECE_COLOR[current_type]) 
         
-       for y in range(ROWS):                                                                                  
-                   for x in range(COLS):                                                                              
-                       if board[y][x] != 0:                                                                           
-                           draw_block(x, y, board[y][x])   
-                           pyxel.text(4, 4, "SCORE", 7)
-                           pyxel.text(4, 12, str(score), 7)
+for y in range(ROWS):                                                                                  
+    for x in range(COLS):                                                                              
+        if board[y][x] != 0:                                                                           
+            draw_block(x, y, board[y][x])   
+            pyxel.text(4, 4, "SCORE", 7)
+            pyxel.text(4, 12, str(score), 7)
                            
-                           nxt = peek_next()                                                                                      
-                           pyxel.rect(W - 58, 4, 54, 38, 0)                                                                       
-                           pyxel.rectb(W - 58, 4, 54, 38, 7)                                                                      
-                           pyxel.text(W - 50, 6, "NEXT", 7)                                                                       
-                           cells = TETROMINO[nxt]                                                                                 
-                           min_x = min(cx for cx, _ in cells)                                                                     
-                           min_y = min(cy for _, cy in cells)                                                                     
-                           for cx, cy in cells:                                                                                  
-                               pyxel.rect(W - 50 + (cx - min_x) * 8, 16 + (cy - min_y) * 8, 7, 7, PIECE_COLOR[nxt])  
+        nxt_list = peek_next(3)                                                                                      
+        for i, nxt in enumerate(nxt_list):                                               
+            cells = TETROMINO[nxt]                                                                                            
+            min_x = min(cx for cx, _ in cells)                                                                                
+            min_y = min(cy for _, cy in cells)                                                                                
+            for cx, cy in cells:                                                                                                                                              
+                pyxel.rect(W - 50 + (cx - min_x) * 8, 16 + i * 20 + (cy - min_y) * 8, 7, 7, PIECE_COLOR[nxt]) 
                                
-                               if game_over:                                                                                          
-                                   pyxel.rect(25, 135, 110, 55, 0)                                                                    
-                                   pyxel.rectb(25, 135, 110, 55, 8)                                                                   
-                                   pyxel.text(58, 147, "GAME OVER", 8)                                                                
-                                   pyxel.text(38, 163, "SCORE: " + str(score), 7)                                                     
-                                   pyxel.text(42, 175, "R: RESTART", 7)  
+        if game_over:                                                                                          
+            pyxel.rect(25, 135, 110, 55, 0)                                                                    
+            pyxel.rectb(25, 135, 110, 55, 8)                                                                   
+            pyxel.text(58, 147, "GAME OVER", 8)                                                                
+            pyxel.text(38, 163, "SCORE: " + str(score), 7)                                                     
+            pyxel.text(42, 175, "R: RESTART", 7)  
                          
                          
     
