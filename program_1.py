@@ -64,11 +64,12 @@ def recenter():
                                                                                                          
                                                                                                          
 def reset_game():                                                                                     
-    global board, score, game_over, candidates, selected                                              
+    global board, score, game_over, candidates, selected, used                                           
     board = [[0 for _ in range(COLS)] for _ in range(ROWS)]                                           
     score = 0                                                                                         
     game_over = False                                                                                 
-    candidates = make_candidates()                                                                    
+    candidates = make_candidates()
+    used = [False, False, False]                                                                    
     selected = 0                                                                                      
     recenter()                                                                                        
                                                                                                          
@@ -117,16 +118,27 @@ def clear_full_lines():
                                                                                                          
                                                                                                          
 def place_piece():                                                                                    
-    global candidates, selected, game_over                                                            
+    global candidates, selected, game_over, used                                                          
     color = SHAPE_COLOR[candidates[selected]]                                                         
     for cx, cy in SHAPES[candidates[selected]]:                                                       
         board[piece_y + cy][piece_x + cx] = color                                                     
     clear_full_lines()                                                                                                                                                          
-    candidates = make_candidates()                                                                    
-    selected = 0                                                                                      
-    recenter()                                                                                                                                                  
-    if not any(can_place_anywhere(name) for name in candidates):                                      
-        game_over = True                                                                              
+    
+    used[selected] = True
+    
+    if all(used):                                                                           
+           candidates = make_candidates()                                                    
+           used = [False, False, False]                                                          
+           selected = 0                                                                                                  
+           recenter()                                                                                                    
+    else:                                                                                   
+        selected = next(i for i in range(3) if not used[i])                                                           
+        recenter()                                                                                                    
+                                                                                                                         
+    remaining = [name for i, name in enumerate(candidates) if not used[i]]                                            
+    if remaining and not any(can_place_anywhere(name) for name in remaining):                                         
+        game_over = True                                                                
+                                                           
                                                                                                          
                                                                                                          
 def update():                                                                                         
@@ -136,13 +148,13 @@ def update():
             reset_game()                                                                              
         return                                                                                        
                                                                                                                                                                             
-    if pyxel.btnp(pyxel.KEY_1):                                                                       
+    if pyxel.btnp(pyxel.KEY_1) and not used[0]:                                                                       
         selected = 0                                                                                  
         recenter()                                                                                    
-    if pyxel.btnp(pyxel.KEY_2):                                                                       
+    if pyxel.btnp(pyxel.KEY_2) and not used[1]:                                                                       
         selected = 1                                                                                  
         recenter()                                                                                    
-    if pyxel.btnp(pyxel.KEY_3):                                                                       
+    if pyxel.btnp(pyxel.KEY_3) and not used[2]:                                                                       
         selected = 2                                                                                  
         recenter()                                                                                    
                                                                                                                                                                                          
